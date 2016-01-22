@@ -1,4 +1,101 @@
-syntax on
+" Basics
 
-" Wrap gitcommit file types at the appropriate length
-filetype indent plugin on
+" 环境识别
+let s:running_gui =  has("gui_running")
+let s:running_windows = has("win16") || has("win32") || has("win64")
+let s:running_mac = has("mac")
+let s:colorful_term = (&term =~ "xterm") || (&term =~ "screen")
+
+set nocompatible "explicitly get out of vi-compatible mode
+set fileencodings=utf8,cp936,gb18030,big5
+
+" Vundle
+filetype off
+
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+Plugin 'gmarik/Vundle.vim'
+Plugin 'scrooloose/syntastic' " syntax checking
+Plugin 'bling/vim-airline' " powerline
+Plugin 'thinca/vim-quickrun' " quick run
+Plugin 'vim-ruby/vim-ruby'
+
+if s:running_mac
+  Plugin 'toyamarinyon/vim-swift'
+endif
+
+call vundle#end()
+
+" 检测文件类型
+filetype plugin indent on
+syntax on " 语法高亮
+
+set history=9999
+set ruler "显示当前位置
+set number "显示行号
+set nowrap "不自动换行
+set autoread " 自动更新改动
+set backspace=indent,eol,start "允许退格键的使用
+set whichwrap+=<,>,[,],h,l
+set autoindent " 自动缩进
+set cindent " 支持c缩进
+set smartindent " 智能缩进
+set showmatch " 括号匹配
+set incsearch
+set ignorecase
+set smartcase
+set hlsearch " 匹配高亮显示
+set foldmethod=syntax " 折叠模式
+set foldlevel=100 "启动vim时不要自动折叠代码
+
+" 关闭高亮 <\><cr>
+map <silent> <leader><cr> : nohlsearch <cr>
+
+" No sound on errors
+set noerrorbells
+set novisualbell
+set t_vb=
+set tm=500
+
+" 去除vim的GUI版本中的toolbar
+if s:running_gui
+  set guioptions-=T
+endif
+
+" 颜色方案
+colorscheme koehler "koehler颜色方案
+
+" tweaks
+au BufWritePre * sil %s/\s\+$//e "保存文件时自动删除行尾空格或Tab
+"au BufWritePre * exe ‘sil! 1,’ . min([line('$'), 20]) . ‘s/^\S\+\s\+Last modified: \zs.*/\=strftime(“%y-%m-%d %H:%M:%S”)/e’ "自动为文件加上最后修改时间
+"au BufWritePre * %s/^$\n\+\%$//ge "删除文件尾多余的空行
+
+"""""Tab"""""
+set expandtab softtabstop=2 shiftwidth=2 tabstop=2
+
+au FileType c,cpp set ts=4 sts=4 sw=4 et
+au FileType ruby set ts=2 sts=2 sw=2 et
+au FileType make setlocal noet
+
+"""""syntastic"""""
+let g:syntastic_check_on_open = 1
+let g:syntastic_cpp_compiler_options = ' -std=c++1y -stdlib=libstdc++'
+let g:clang_user_options = ' -std=c++1y'
+" set error and warning signs
+let g:syntastic_error_symbol = '✗'
+let g:syntastic_warning_symbol = '⚠'
+
+""""""airline"""""
+set laststatus=2 " show airline alway
+let g:airline_powerline_fonts = 1 " use powerline font
+let g:airline#extensions#tabline#enable = 1
+
+"""""quick run"""""
+if s:running_mac
+  let g:quickrun_config = {}
+  let g:quickrun_config['swift'] = {
+    \ 'command': 'swift',
+    \ 'cmdopt': '-sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk',
+    \ 'exec': '%c %o %s',
+    \}
+endif
